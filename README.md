@@ -1,3 +1,4 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/3ficiecsdyqdfh42?svg=true)](https://ci.appveyor.com/project/IlyaDyakonov/media)
 
 
 
