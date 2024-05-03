@@ -122,11 +122,26 @@ export default class Text {
     this.stop = document.querySelector('.stop-rec');
     this.start = document.querySelector('.start-rec');
 
+    let timerInterval;
+    let seconds = -1;
+    let minutes = 0;
+
     this.videoIcon.addEventListener('click', async() => {
       this.videoPlayer.classList.toggle('active');
       this.videoIcon.classList.toggle('active');
       this.microIcon.classList.toggle('active');
       this.startStop.classList.toggle('inactive');
+
+      timerInterval = setInterval(() => {
+        seconds++;
+        if (seconds === 60) {
+          seconds = 0;
+          minutes++;
+        }
+        // Обновление времени
+        this.updateTime(minutes, seconds);
+      }, 1000);
+
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -158,6 +173,9 @@ export default class Text {
     });
 
     this.stop.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      seconds = -1;
+      minutes = 0;
       if (this.recorder && this.recorder.state !== 'inactive') {
         this.recorder.stop();
         this.startStop.classList.toggle('inactive');
@@ -171,6 +189,9 @@ export default class Text {
     });
 
     this.start.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      seconds = -1;
+      minutes = 0;
       const videoElement = document.createElement('video');
       videoElement.controls = true;
       this.divRec = document.createElement('div');
@@ -205,4 +226,14 @@ export default class Text {
       }
     });
   }
+
+  // Функция для обновления времени
+  updateTime(minutes, seconds) {
+    const timeDisplay = document.querySelector('.time');
+    timeDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+  }
 }
+
+
+// 1. сделать запись звука в потоке видео
+// 2. реализовать добавление кнопки записи только звука.
