@@ -111,7 +111,119 @@ export default class Text {
   // аудио
   addVoice() {
     this.microIcon = document.querySelector('.microphone-icon');
+    this.audioPlayer = document.querySelector('.audio');
+    this.startStop = document.querySelector('.start-stop');
+    this.stop = document.querySelector('.stop-rec');
+    this.start = document.querySelector('.start-rec');
 
+    let timerInterval;
+    let seconds = -1;
+    let minutes = 0;
+
+    
+    this.microIcon.addEventListener('click', async() => {
+      this.audioPlayer.classList.toggle('active');
+      this.videoIcon.classList.toggle('active');
+      this.microIcon.classList.toggle('active');
+      this.startStop.classList.toggle('inactive');
+
+      timerInterval = setInterval(() => {
+        seconds++;
+        if (seconds === 60) {
+          seconds = 0;
+          minutes++;
+        }
+        // Обновление времени
+        this.updateTime(minutes, seconds);
+      }, 1000);
+
+      try {
+        this.streamAudio = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
+        this.recorderAudio = new MediaRecorder(this.streamAudio);
+        const chunks = [];
+        this.recorderAudio.addEventListener('dataavailable', (event) => {
+          chunks.push(event.data);
+        });
+        this.recorderAudio.addEventListener('stop', () => {
+          const blob = new Blob(chunks);
+          this.audioPlayer.src = URL.createObjectURL(blob);
+        });
+        this.recorderAudio.start();
+      } catch (error) {
+        console.error('Ошибка при получении аудиопотока:', error);
+        this.audioPlayer.classList.toggle('active');
+        this.videoIcon.classList.toggle('active');
+        this.microIcon.classList.toggle('active');
+        this.startStop.classList.toggle('inactive');
+        alert('Разрешите использование микрофона устройства.')
+        clearInterval(timerInterval);
+        seconds = -1;
+        minutes = 0;
+      }
+
+      this.flagFalse = true;
+    });
+
+    this.stop.addEventListener('click', () => {
+      console.log('stop addVoice');
+      clearInterval(timerInterval);
+      seconds = -1;
+      minutes = 0;
+      if (this.recorderAudio && this.recorderAudio.state !== 'inactive') {
+        this.recorderAudio.stop();
+        this.audioPlayer.classList.toggle('active');
+        this.videoIcon.classList.toggle('active');
+        this.microIcon.classList.toggle('active');
+        this.startStop.classList.toggle('inactive');
+      }
+      if (this.streamAudio) {
+        this.streamAudio.getTracks().forEach(track => track.stop());
+      }
+    });
+
+    this.start.addEventListener('click', () => {
+      if (this.flagFalse) {
+        console.log('start addVoice');
+        clearInterval(timerInterval);
+        seconds = -1;
+        minutes = 0;
+        const audioElement = document.createElement('audio');
+        audioElement.controls = true;
+        this.divRec = document.createElement('div');
+        this.divRec.classList.add('recordVideo');
+        this.divRec.appendChild(audioElement);
+
+        // Создаем текстовый узел для даты и времени и добавляем всю запись на стену
+        const dateT = document.createElement('div');
+        dateT.classList.add('recordTime');
+        const dateTime = new Date().toLocaleString();
+        const dateTimeNode = document.createTextNode(dateTime.slice(0, -3));
+        dateT.appendChild(dateTimeNode)
+        this.divRec.appendChild(dateT);
+        this.rec.appendChild(this.divRec);
+
+        this.geolocation();
+
+        if (this.recorderAudio && this.recorderAudio.state !== 'inactive') {
+          this.recorderAudio.stop();
+          this.recorderAudio.ondataavailable = (event) => {
+            audioElement.src = URL.createObjectURL(event.data);
+          };
+        }
+
+        this.audioPlayer.classList.toggle('active');
+        this.videoIcon.classList.toggle('active');
+        this.microIcon.classList.toggle('active');
+        this.startStop.classList.toggle('inactive');
+
+        if (this.streamAudio) {
+          this.streamAudio.getTracks().forEach(track => track.stop());
+        }
+      }
+    });
   }
 
   // видео
@@ -169,10 +281,16 @@ export default class Text {
         this.microIcon.classList.toggle('active');
         this.videoPlayer.classList.toggle('active');
         alert('Разрешите использование видеокамеры устройства.')
+        clearInterval(timerInterval);
+        seconds = -1;
+        minutes = 0;
       }
+
+      this.flagFalse = false;
     });
 
     this.stop.addEventListener('click', () => {
+      console.log('stop addVideo');
       clearInterval(timerInterval);
       seconds = -1;
       minutes = 0;
@@ -189,40 +307,43 @@ export default class Text {
     });
 
     this.start.addEventListener('click', () => {
-      clearInterval(timerInterval);
-      seconds = -1;
-      minutes = 0;
-      const videoElement = document.createElement('video');
-      videoElement.controls = true;
-      this.divRec = document.createElement('div');
-      this.divRec.classList.add('recordVideo');
-      this.divRec.appendChild(videoElement);
+      if (!this.flagFalse) {
+        console.log('start addVideo');
+        clearInterval(timerInterval);
+        seconds = -1;
+        minutes = 0;
+        const videoElement = document.createElement('video');
+        videoElement.controls = true;
+        this.divRec = document.createElement('div');
+        this.divRec.classList.add('recordVideo');
+        this.divRec.appendChild(videoElement);
 
-      // Создаем текстовый узел для даты и времени и добавляем всю запись на стену
-      const dateT = document.createElement('div');
-      dateT.classList.add('recordTime');
-      const dateTime = new Date().toLocaleString();
-      const dateTimeNode = document.createTextNode(dateTime.slice(0, -3));
-      dateT.appendChild(dateTimeNode)
-      this.divRec.appendChild(dateT);
-      this.rec.appendChild(this.divRec);
+        // Создаем текстовый узел для даты и времени и добавляем всю запись на стену
+        const dateT = document.createElement('div');
+        dateT.classList.add('recordTime');
+        const dateTime = new Date().toLocaleString();
+        const dateTimeNode = document.createTextNode(dateTime.slice(0, -3));
+        dateT.appendChild(dateTimeNode)
+        this.divRec.appendChild(dateT);
+        this.rec.appendChild(this.divRec);
 
-      this.geolocation();
+        this.geolocation();
 
-      if (this.recorder && this.recorder.state !== 'inactive') {
-        this.recorder.stop();
-        this.recorder.ondataavailable = (event) => {
-          videoElement.src = URL.createObjectURL(event.data);
-        };
-      }
+        if (this.recorder && this.recorder.state !== 'inactive') {
+          this.recorder.stop();
+          this.recorder.ondataavailable = (event) => {
+            videoElement.src = URL.createObjectURL(event.data);
+          };
+        }
 
-      this.startStop.classList.toggle('inactive');
-      this.videoIcon.classList.toggle('active');
-      this.microIcon.classList.toggle('active');
-      this.videoPlayer.classList.toggle('active');
+        this.startStop.classList.toggle('inactive');
+        this.videoIcon.classList.toggle('active');
+        this.microIcon.classList.toggle('active');
+        this.videoPlayer.classList.toggle('active');
 
-      if (this.stream) {
-        this.stream.getTracks().forEach(track => track.stop());
+        if (this.stream) {
+          this.stream.getTracks().forEach(track => track.stop());
+        }
       }
     });
   }
