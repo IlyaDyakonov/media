@@ -256,15 +256,18 @@ export default class Text {
 
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: true, audio: false,
         });
 
         this.videoPlayer.srcObject = this.stream;
         this.videoPlayer.addEventListener('canplay', () => {
           this.videoPlayer.play();
         });
+        this.audioVideoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
-        this.recorder = new MediaRecorder(this.stream);
+        // Записать видео поток с аудио вместе
+        this.recorder = new MediaRecorder(this.audioVideoStream);
+        // this.recorder = new MediaRecorder(this.stream);
         const chunks = [];
         this.recorder.addEventListener('dataavailable', (event) => {
           chunks.push(event.data);
