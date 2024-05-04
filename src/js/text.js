@@ -354,7 +354,3 @@ export default class Text {
     timeDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   }
 }
-
-
-// 1. сделать запись звука в потоке видео
-// 2. реализовать добавление кнопки записи только звука.
