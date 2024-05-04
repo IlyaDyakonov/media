@@ -139,7 +139,7 @@
   margin-top: 50px;
   cursor: pointer;
   font-size: 35px;
-  border: 1px solid rgb(0, 143, 153);
+  /* border: 1px solid rgb(0, 143, 153); */
   border-radius: 20px;
 }
 
@@ -155,10 +155,10 @@
   display: inline-block;
   position: absolute;
   margin-left: -110px;
-  margin-top: 50px;
+  margin-top: 46px;
   cursor: pointer;
   font-size: 35px;
-  border: 1px solid rgb(0, 143, 153);
+  /* border: 1px solid rgb(0, 143, 153); */
   border-radius: 20px;
 }
 
@@ -217,5 +217,17 @@
   border-radius: 5px;
   background-color: rgb(255, 255, 255);
   position: relative;
+}
+
+.audio {
+  display: none;
+  position: absolute;
+  margin-left: 535px;
+  margin-top: -35px;
+  border-radius: 10px;
+}
+
+.audio.active {
+  display: none;
 }
 
